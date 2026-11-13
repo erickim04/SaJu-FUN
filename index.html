@@ -1,0 +1,137 @@
+<!doctype html>
+<html lang="ko">
+<head>
+  <meta charset="utf-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover"/>
+  <meta name="theme-color" content="#172b38"/>
+  <meta name="description" content="개인용 사주·오행 달력. 사주 원국, 오행 분포, 월간 일진 및 절기를 무료로 확인하세요."/>
+  <link rel="manifest" href="manifest.webmanifest"/>
+  <link rel="icon" type="image/png" href="icons/icon-192.png"/>
+  <link rel="apple-touch-icon" href="icons/icon-192.png"/>
+  <link rel="stylesheet" href="style.css?v=1.9"/>
+  <title>나의 사주 달력 · 개인용 베타</title>
+  <script defer src="data/terms.js?v=1.9"></script>
+  <script defer src="data/lunar.js?v=1.9"></script>
+  <script defer src="js/core.js?v=1.9"></script>
+  <script defer src="js/symbolicNumbers.js?v=1.9"></script>
+  <script defer src="js/fortuneFlow.js?v=1.9"></script>
+  <script defer src="js/app.js?v=1.9"></script>
+  <script defer src="js/mobilePicker.js?v=1.9"></script>
+</head>
+<body>
+  <div class="app-shell">
+    <aside class="sidebar">
+      <div class="brand"><span class="brand-mark">四</span><span><b>나의 사주 달력</b><small>개인용 만세력 베타</small></span></div>
+      <nav aria-label="화면 메뉴">
+        <a href="#input-section" class="nav-link active"><span>◈</span> 출생정보</a>
+        <a href="#result-section" class="nav-link"><span>☯</span> 사주 원국</a>
+        <a href="#elements-section" class="nav-link"><span>◉</span> 오행 분석</a>
+        <a href="#calendar-section" class="nav-link"><span>▦</span> 월간 달력</a>
+        <a href="#flow-section" class="nav-link"><span>⌁</span> 월간 운의 흐름</a>
+
+        <a href="#technical-section" class="nav-link"><span>⌁</span> 계산 기준</a>
+        <a href="#numbers-section" class="nav-link"><span>✧</span> 오행 상징 숫자</a>
+      </nav>
+      <div class="sidebar-note">정밀 만세력은 공식 자료와 대조 후 사용하세요. 오행 해석은 전통적 상징이며 미래 예측의 과학적 근거가 아닙니다.</div>
+    </aside>
+    <main>
+      <header class="hero">
+        <div class="hero-content"><span class="eyebrow">PERSONAL SAJU CALENDAR</span><h1>나의 사주를<br/><em>한눈에 읽는 달력</em></h1><p>출생 순간의 간지부터 오늘의 오행까지. 계산 방식이 달라지는 부분은 감추지 않고 비교합니다.</p></div>
+        <div class="hero-art" aria-hidden="true"><div class="orbit outer"><div class="orbit mid"><div class="orbit inner">木<br/>火 土<br/>金 水</div></div></div></div>
+      </header>
+      <div class="content-wrap">
+        <div class="topline"><span class="pill"><i></i> 로컬 실행 · 광고 없음</span><span class="pill muted">v1.9 · 1900~2100 양력</span></div>
+        <section id="input-section" class="panel input-panel">
+          <div class="section-heading"><div><span class="overline">01 / BIRTH DATA</span><h2>출생정보 입력</h2><p>음력·윤달을 선택할 수 있으며, 출생시간을 모르시면 비워둘 수 있습니다.</p></div><span class="section-icon">☰</span></div>
+          <div id="appInitNotice" class="app-init-notice" role="status">앱 기능을 불러오는 중입니다. 이 문구가 계속 표시되면 HTML 미리보기에서는 자바스크립트가 차단된 상태일 수 있으니 다운로드 후 Safari·Chrome에서 열거나 GitHub Pages 주소로 접속해 주세요.</div>
+          <div id="analysisAlert" class="analysis-alert" role="alert" hidden></div>
+          <form id="birthForm" novalidate>
+            <p class="mobile-picker-hint">모든 항목은 직접 입력하거나 오른쪽 ⌄ 버튼으로 선택할 수 있습니다. 분석 버튼 아래에서 진행 상태와 결과 확인 버튼을 볼 수 있습니다.</p>
+            <div class="form-grid">
+              <div class="field"><label for="calendarType">날짜 종류</label><select id="calendarType"><option value="solar">양력</option><option value="lunar">음력</option></select></div>
+              <div class="field"><label for="year">출생 연도</label><input id="year" type="number" min="1900" max="2100" step="1" inputmode="numeric" value="1982" required/></div>
+              <div class="field"><label for="month">월</label><select id="month"></select></div>
+              <div class="field"><label for="day">일</label><select id="day"></select></div>
+              <div class="field" id="leapField" hidden><label for="leapMonth">윤달 여부</label><select id="leapMonth"><option value="0">평달</option><option value="1">윤달</option></select></div>
+              <div class="field"><label for="gender">전통 대운 계산용 분류</label><select id="gender"><option value="f">여성</option><option value="m">남성</option><option value="n">지정 안 함</option></select></div>
+              <div class="field"><label for="province">출생 시·도</label><select id="province"></select></div>
+              <div class="field"><label for="city">출생 도시</label><select id="city"></select></div>
+              <div class="field"><label for="hour">출생시간 (선택)</label><select id="hour"><option value="">모름 / 입력하지 않음</option></select></div>
+              <div class="field"><label for="minute">출생 분</label><select id="minute"></select></div>
+            </div>
+            <div class="input-footer"><label class="checkline"><input type="checkbox" id="remember"/> 이 기기에만 출생정보 저장하기</label><button class="primary-btn" id="analyze" type="submit"><span id="analyzeLabel">사주 분석하기</span><span id="analyzeArrow" aria-hidden="true">→</span><span id="analyzeSpinner" class="button-spinner" aria-hidden="true" hidden></span></button></div>
+            <div id="analysisProgress" class="analysis-progress" role="status" aria-live="polite" hidden><span class="analysis-spinner" aria-hidden="true"></span><div><strong>사주 분석 중</strong><p id="analysisStage">입력값을 확인하고 있습니다.</p></div></div>
+            <div id="analysisComplete" class="analysis-complete" role="status" aria-live="polite" hidden><div class="complete-title"><span aria-hidden="true">✓</span><strong>사주 분석이 완료되었습니다.</strong></div><p id="completeSummary">사주 원국과 오행 분석 결과가 준비되었습니다.</p><button type="button" id="viewResults" class="view-results-btn">분석 결과 바로 보기 ↓</button></div>
+            <div class="notification" role="status" id="formNotice" hidden></div>
+          </form>
+        </section>
+        <section id="result-section" class="panel">
+          <div class="section-heading"><div><span class="overline">02 / THE FOUR PILLARS</span><h2>나의 사주 원국</h2><p>법정 표준시·경도 보정·진태양시의 세 계산 결과를 비교합니다.</p></div></div>
+          <div id="resultEmpty" class="empty">출생정보를 입력하고 <b>사주 분석하기</b>를 눌러주세요.</div>
+          <div id="resultBody" hidden>
+            <div class="result-intro" id="resultIntro"></div>
+            <div class="three-modes" id="timeTabs" role="tablist" aria-label="시간 계산 기준"></div>
+            <div class="pillar-wrap" id="pillars"></div>
+            <div class="comparison" id="comparison"></div>
+            <div class="zi-compare" id="ziCompare"></div>
+            <div class="mini-note" id="resultWarning"></div>
+          </div>
+        </section>
+        <section id="elements-section" class="panel">
+          <div class="section-heading"><div><span class="overline">03 / FIVE ELEMENTS</span><h2>오행 분석</h2><p>사주 8글자(출생시간 미입력 시 6글자)의 기본 오행 분포를 표시합니다.</p></div></div>
+          <div id="elementEmpty" class="empty">사주 분석을 완료하면 오행 분포가 표시됩니다.</div>
+          <div id="elementBody" hidden><div class="elements-list" id="elementsChart"></div><div class="interp-panel" id="simpleReading"></div><div class="subheading">십성과 지장간 · 기초 정보</div><div id="technicalTable"></div><div class="roadmap"><strong>추가 예정</strong> 지장간 가중 분석, 신강·신약, 격국, 억부·조후·격국·통관용신 비교는 아직 계산 결과를 제공하지 않습니다. 검증 후 순차 적용할 기능입니다.</div></div>
+        </section>
+        <section id="calendar-section" class="panel">
+          <div class="section-heading"><div><span class="overline">04 / MONTHLY CALENDAR</span><h2>월간 일진 달력</h2><p>날짜별 천간·지지와 오행을 살펴보세요. 사주 분석 후에는 조화·재물 상징일을 함께 표시합니다.</p></div></div>
+          <div class="cal-header"><button class="arrow-btn" id="prevMonth" aria-label="이전 달">←</button><h3 id="monthLabel"></h3><button class="arrow-btn" id="nextMonth" aria-label="다음 달">→</button><button class="today-btn" id="todayMonth">이번 달</button></div>
+          <div class="reading-year-chooser"><label for="calendarYear">조회할 연도</label><input id="calendarYear" type="number" min="1900" max="2100" step="1" inputmode="numeric" aria-label="달력을 조회할 연도"/><button id="goCalendarYear" type="button">연도 이동</button><small id="calendarYearHelp" role="status">연도를 바꾸면 달력과 월간 운의 흐름이 바뀝니다.</small></div>
+          <div class="calendar-week" aria-hidden="true"><span>일</span><span>월</span><span>화</span><span>수</span><span>목</span><span>금</span><span>토</span></div>
+          <div id="calendarSymbolSummary" class="symbol-month-summary" aria-live="polite">출생정보를 분석하면 개인별 조화·재물 상징일이 달력에 나타납니다.</div>
+          <div id="calendarGrid" class="calendar-grid" aria-label="월간 일진 달력"></div>
+          <div class="legend"><span><i class="dot wood"></i>목</span><span><i class="dot fire"></i>화</span><span><i class="dot earth"></i>토</span><span><i class="dot metal"></i>금</span><span><i class="dot water"></i>수</span></div>
+          <div class="symbol-legend" aria-label="상징일 표시 설명">
+            <span><i class="symbol-legend-chip harmony">조화</i> 천간합 또는 일지 육합</span>
+            <span><i class="symbol-legend-chip wealth">재물</i> 일진 천간이 정재·편재</span>
+          </div>
+          <div id="dateDetails" class="date-details"></div>
+          <p class="symbol-disclaimer">※ 표식은 명리학의 합·십성 관계에 따른 상징적 분류입니다. 실제 재물 획득, 행운, 금전적 결과를 예측하거나 보장하지 않습니다.</p>
+        </section>
+        <section id="flow-section" class="panel">
+          <div class="section-heading"><div><span class="overline">05 / MONTHLY FLOW</span><h2>일자별 운의 흐름</h2><p>선택한 월의 날짜별 일진과 개인 일간의 관계를 선 그래프로 표시합니다. 월 평균을 기준으로 위·아래 상대적인 차이를 보여줍니다.</p></div></div>
+          <div id="flowEmpty" class="empty">사주 분석을 완료하면 검색 월의 날짜별 흐름 선 그래프가 표시됩니다.</div>
+          <div id="flowBody" hidden>
+            <div class="flow-summary"><strong id="flowSubtitle"></strong><span>▲ 상대적으로 높음 · ▼ 상대적으로 낮음</span></div>
+            <div id="flowChart" class="flow-chart" role="group" aria-label="날짜별 흐름 선 그래프"></div>
+            <div id="flowDetail" class="flow-detail" aria-live="polite"></div>
+            <p id="flowExplainer" class="flow-explainer"></p>
+          </div>
+        </section>
+        <section id="technical-section" class="panel technical-panel">
+          <div class="section-heading"><div><span class="overline">06 / SOURCES & METHOD</span><h2>계산 기준과 주의사항</h2></div></div>
+          <div class="info-grid">
+            <article><h3>역법 계산</h3><p>양력 1900~2100, 일진 60갑자 순환, 태양 황경 계산으로 생성한 절기표를 사용합니다. 절기표는 공식 월력과 전수 대조한 자료가 아닙니다.</p></article>
+            <article><h3>음력 입력</h3><p>한국식 음력 월 시작 자료는 1900~2050년만 제공합니다. 2051~2100년에는 양력 입력을 사용하세요. 한국천문연구원의 공식 값과 차이가 있을 수 있습니다.</p></article>
+            <article><h3>출생시간</h3><p>Asia/Seoul 역사적 법정 시간대를 적용합니다. 지방평균태양시와 진태양시(균시차 근삿값)를 비교하고, 서머타임 중복/누락 시각은 안내합니다.</p></article>
+            <article><h3>일주와 자시</h3><p>일주가 00시에 바뀌는 방식과 23시에 바뀌는 방식을 별도로 표시합니다. 연주·월주는 절입 순간의 시간 순서를 따릅니다.</p></article>
+            <article><h3>전통적 해석</h3><p>오행·십성의 월간 상대 흐름은 명리학의 상징적 설명입니다. 선 그래프는 월 평균 0의 자체 가중 규칙이며 재물·건강·사고·미래 사건의 가능성을 예측하지 않습니다.</p></article>
+            <article><h3>개인정보</h3><p>입력값은 서버로 전송하지 않습니다. 정보 저장을 선택한 경우에만 현재 브라우저의 localStorage에 저장됩니다. 저장을 해제하면 해당 기록을 삭제합니다.</p></article>
+          </div>
+          <div class="reference"><strong>자료 및 기술 근거</strong> <a href="https://www.data.go.kr/data/15012679/openapi.do" target="_blank" rel="noopener">한국천문연구원 음양력 API</a> · <a href="https://www.data.go.kr/data/15012690/openapi.do" target="_blank" rel="noopener">특일·24절기 API</a> · <a href="https://github.com/usingsky/korean_lunar_calendar_py" target="_blank" rel="noopener">Korean Lunar Calendar (MIT)</a> · Swiss Ephemeris 천문 계산 결과(사전 생성) · IANA Asia/Seoul 시간대 데이터</div>
+        </section>
+        <section id="numbers-section" class="panel symbolic-panel">
+          <div class="section-heading"><div><span class="overline">07 / FIVE ELEMENT SYMBOLS</span><h2>나의 행운·재물 상징 숫자</h2><p>사주 원국과 조회 월의 간지·오행을 상징적 숫자 규칙에 연결하여 1~45에서 6개씩, 5그룹을 만듭니다.</p></div><span class="section-icon">✧</span></div>
+          <div id="numbersEmpty" class="empty">출생정보를 입력하고 사주 분석하기를 누르면 <b>숫자 6개 × 5그룹</b>을 한 번에 표시합니다.</div>
+          <div id="numbersBody" hidden>
+            <div class="symbolic-toolbar"><p id="numbersMeta" class="number-meta"></p><div class="number-actions"><button id="refreshNumbers" type="button" class="secondary-btn">↻ 다른 조합 보기</button><button id="copyNumbers" type="button" class="secondary-btn">5그룹 복사</button></div></div>
+            <div id="numbersGrid" class="number-groups" aria-live="polite"></div>
+            <div class="number-rules"><strong>숫자 구성 원칙</strong><p>각 그룹에는 목·화·토·금·수에 해당하는 숫자를 하나씩 넣고, 일간과 월운의 오행을 고려한 강조 오행 숫자를 하나 더 배치합니다. 총 30개 숫자는 그룹 내부와 그룹 사이에서도 서로 중복되지 않습니다.</p><p>숫자 끝자리와 오행의 대응은 앱에서 정의한 상징적 확장 규칙입니다. 실제 행운이나 재물 획득 가능성을 높이는 번호라는 뜻은 아닙니다.</p></div>
+            <div id="numbersNotice" class="number-feedback" role="status" aria-live="polite"></div>
+          </div>
+        </section>
+        <footer>나의 사주 달력 · 개인 소장용 베타 v1.9 <span>정확성 미검증 구간의 결과는 참고용으로만 사용하세요.</span></footer>
+      </div>
+    </main>
+  </div>
+</body>
+</html>
